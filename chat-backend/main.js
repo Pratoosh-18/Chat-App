@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 3000
 connectDB()
 .then(()=>{
     app.get("/",(req,res)=>{
-        res.send("Welcome to real estate marketplace")
+        res.send("Welcome to Chatting app backed")
     })
     
     app.listen(PORT,()=>{

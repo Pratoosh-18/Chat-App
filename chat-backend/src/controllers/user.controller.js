@@ -78,4 +78,14 @@ const getAllUsers = asyncHandler(async (req, res) => {
     res.status(200).json({ users });
 });
 
-export { registerUser, loginUser, logoutUser, getAllUsers }
+const getUser = asyncHandler(async (req, res) => {
+    const { id } = req.params;  // Get user ID from params
+    const user = await User.findById(id).select("-password"); 
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    res.status(200).json({ user });
+});
+
+export { registerUser, loginUser, logoutUser, getAllUsers, getUser }

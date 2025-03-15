@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import fileUpload from "express-fileupload";
 import userRoutes from "./src/routes/user.routes.js";
 import cloudinaryConfig from "./src/config/cloudinary.js";
+import chatRoutes from "./src/routes/chat.routes.js";
 
 dotenv.config();
 
@@ -24,5 +25,6 @@ app.use(fileUpload({
 cloudinaryConfig();
 
 app.use(`/api/v${APP_VERSION}/user`, userRoutes);
+app.use(`/api/v${APP_VERSION}/chat`, chatRoutes);
 
 export default app;

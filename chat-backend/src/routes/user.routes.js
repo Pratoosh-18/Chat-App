@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAllUsers, loginUser, logoutUser, registerUser } from "../controllers/user.controller.js";
+import { getAllUsers, getUser, loginUser, logoutUser, registerUser } from "../controllers/user.controller.js";
 
 const userRoutes = Router()
 
@@ -15,5 +15,8 @@ userRoutes.route("/logout").post(
 userRoutes.route("/getAllUsers").get(
     getAllUsers
 )
+userRoutes.route("/:id").get(
+    getUser
+);
 
 export default userRoutes;

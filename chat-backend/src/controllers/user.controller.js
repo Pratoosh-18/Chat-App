@@ -1,5 +1,8 @@
 import { User } from "../models/user.model.js";
+import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHnadler.js";
+import { v2 as cloudinary } from 'cloudinary';
+import jwt from "jsonwebtoken"
 
 async function uploading(file, folder) {
     const options = {
@@ -7,6 +10,12 @@ async function uploading(file, folder) {
     };
     return await cloudinary.uploader.upload(file.tempFilePath, options);
 }
+
+const generateAccessToken = (userId) => {
+    return jwt.sign({ _id: userId }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn:process.env.ACCESS_TOKEN_EXPIRY,
+    });
+};
 
 const registerUser = asyncHandler(async (req, res) => {
     console.log("Register called");
@@ -49,7 +58,19 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-    res.json({"Login user":"ok"});
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) throw new ApiError(401, "Invalid email");
+    if (!user.password==password) throw new ApiError(401, "Invalid password");
+
+    const accessToken = generateAccessToken(user._id);
+
+    res.status(200).json({user: await User.findById(user._id).select("-password"),token: accessToken});
 });
 
-export { registerUser,loginUser }
+const logoutUser = asyncHandler(async (req, res) => {
+    res.status(200).json({ message: "Logged out successfully" });
+});
+
+export { registerUser, loginUser, logoutUser }

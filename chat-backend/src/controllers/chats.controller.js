@@ -1,4 +1,6 @@
 import { Chat } from "../models/chat.model.js";
+import { Message } from "../models/message.model.js";
+import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHnadler.js";
 

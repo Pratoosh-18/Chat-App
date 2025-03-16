@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -10,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { users } from "@/lib/dummy-data"
 import { useAuth } from "@/context/auth-context"
 import { useTheme } from "next-themes"
 import { Moon, Sun } from "lucide-react"
@@ -25,37 +23,52 @@ export default function LoginPage() {
   const { login } = useAuth()
   const { theme, setTheme } = useTheme()
 
-  // Wait until mounted to avoid hydration mismatch
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-
-    // Simulate API call delay
-    setTimeout(() => {
-      // Find user with matching email
-      const user = users.find((u) => u.email === email)
-
-      if (user && password === "password") {
-        // In a real app, you'd verify the hashed password
-        login(user)
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        })
-        router.push("/chat")
-      } else {
-        toast({
-          title: "Login failed",
-          description: "Invalid email or password",
-          variant: "destructive",
-        })
+    
+    try {
+      const response = await fetch("http://localhost:8000/api/v1/user/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to login")
       }
+      
+      login({
+        _id: data.user._id,
+        username: data.user.username,
+        email: data.user.email,
+        avatar: data.user.avatar,
+        token: data.token
+      })
+      
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      })
+      
+      router.push("/chat")
+    } catch (error) {
+      toast({
+        title: "Error",
+        // description: error.message,
+        variant: "destructive",
+      })
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
@@ -132,4 +145,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

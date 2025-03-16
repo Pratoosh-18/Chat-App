@@ -21,10 +21,15 @@ export default function ChatPage() {
   const isMobile = useMobile()
   const { user: currentUser, logout } = useAuth()
 
-  // Wait until mounted to avoid hydration mismatch
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // useEffect(() => {
+  //   setInterval(() => {
+  //     console.log(currentUser)
+  //   }, 1000);
+  // }, [])
 
   // Auto-close sidebar on mobile
   useEffect(() => {
@@ -38,7 +43,7 @@ export default function ChatPage() {
   // Start a new chat with a user
   const startChat = (user: User) => {
     // Check if chat already exists
-    const existingChat = chats.find((chat) => !chat.isGroup && chat.participants.some((p) => p.id === user.id))
+    const existingChat = chats.find((chat) => !chat.isGroup && chat.participants.some((p) => p._id === user._id))
 
     if (existingChat) {
       setSelectedChat(existingChat)
@@ -46,13 +51,13 @@ export default function ChatPage() {
       // Create a new chat
       const newChat: Chat = {
         id: `chat-${chats.length + 1}`,
-        name: user.name,
+        name: user.username,
         isGroup: false,
         participants: [currentUser!, user], // Current user and selected user
         lastMessage: {
           id: "new",
           content: "Start a conversation",
-          senderId: currentUser!.id,
+          senderId: currentUser!._id,
           timestamp: new Date().toISOString(),
         },
       }
@@ -68,13 +73,13 @@ export default function ChatPage() {
 
     const newGroup: Chat = {
       id: `group-${chats.length + 1}`,
-      name: `Group with ${selectedUsers.map((u) => u.name).join(", ")}`,
+      name: `Group with ${selectedUsers.map((u) => u.username).join(", ")}`,
       isGroup: true,
       participants: [currentUser!, ...selectedUsers], // Current user and selected users
       lastMessage: {
         id: "new-group",
         content: "Group created",
-        senderId: currentUser!.id,
+        senderId: currentUser!._id,
         timestamp: new Date().toISOString(),
       },
     }

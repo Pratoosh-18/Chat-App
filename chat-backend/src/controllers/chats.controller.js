@@ -58,6 +58,7 @@ const deleteChat = asyncHandler(async (req, res) => {
     res.status(200).json({ message: "Chat deleted successfully" });
 });
 
+// Logic yet to be written with sockets
 const fetchMessages = asyncHandler(async (req, res) => {
     const { chatId } = req.params;
     const page = parseInt(req.query.page) || 1;
@@ -72,6 +73,7 @@ const fetchMessages = asyncHandler(async (req, res) => {
     res.status(200).json(messages);
 });
 
+// Logic yet to be written with sockets
 const deleteMessage = asyncHandler(async (req, res) => {
     const { messageId } = req.params;
 

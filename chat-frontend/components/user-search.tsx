@@ -1,43 +1,68 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import type { User } from "@/lib/types"
-import { users } from "@/lib/dummy-data"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Search, X, Users } from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useEffect, useState } from "react";
+import type { User } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Search, X, Users } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BACKEND_URL } from "@/lib/constants";
 
 interface UserSearchProps {
-  onSelectUser: (user: User) => void
-  onCreateGroup: (users: User[]) => void
-  onClose: () => void
-  currentUser: User
+  onSelectUser: (user: User) => void;
+  onCreateGroup: (users: User[]) => void;
+  onClose: () => void;
+  currentUser: User;
 }
 
 export default function UserSearch({ onSelectUser, onCreateGroup, onClose, currentUser }: UserSearchProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedUsers, setSelectedUsers] = useState<User[]>([])
-  const [activeTab, setActiveTab] = useState("individual")
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [activeTab, setActiveTab] = useState("individual");
+  const [users, setUsers] = useState<User[]>([]);
 
-  // Filter out the current user
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/user/getAllUsers`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error fetching users: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log(data.users)
+        setUsers(data.users || []);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   const filteredUsers = users
-    .filter((user) => user.id !== currentUser.id)
+    .filter((user) => user._id !== currentUser._id)
     .filter(
       (user) =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
+        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   const toggleUserSelection = (user: User) => {
-    if (selectedUsers.some((u) => u.id === user.id)) {
-      setSelectedUsers(selectedUsers.filter((u) => u.id !== user.id))
-    } else {
-      setSelectedUsers([...selectedUsers, user])
-    }
-  }
+    setSelectedUsers((prevSelected) =>
+      prevSelected.some((u) => u._id === user._id)
+        ? prevSelected.filter((u) => u._id !== user._id)
+        : [...prevSelected, user]
+    );
+  };
 
   return (
     <div className="h-full flex flex-col">
@@ -48,7 +73,7 @@ export default function UserSearch({ onSelectUser, onCreateGroup, onClose, curre
         </Button>
       </div>
 
-      <Tabs defaultValue="individual" className="flex-1 flex flex-col" onValueChange={setActiveTab}>
+      <Tabs defaultValue="individual" className="flex-1 flex flex-col" onValueChange={(value) => setActiveTab(value)}>
         <div className="px-4 pt-4">
           <TabsList className="w-full rounded-full">
             <TabsTrigger value="individual" className="flex-1 rounded-full">
@@ -72,20 +97,25 @@ export default function UserSearch({ onSelectUser, onCreateGroup, onClose, curre
           </div>
         </div>
 
-        <TabsContent value="individual" className="flex-1 overflow-y-auto m-0">
+        <TabsContent
+          value="individual"
+          className={`flex-1 overflow-y-auto m-0 ${activeTab !== "individual" ? "hidden" : ""}`}
+        >
           <div className="divide-y divide-border/30">
             {filteredUsers.map((user) => (
               <div
-                key={user.id}
+                key={user._id}
                 className="flex items-center p-4 hover:bg-accent/30 cursor-pointer transition-all duration-200"
                 onClick={() => onSelectUser(user)}
               >
                 <Avatar className="h-10 w-10 border-2 border-background">
-                  <AvatarImage src={user.avatar || `/placeholder.svg?height=40&width=40&text=${user.name.charAt(0)}`} />
-                  <AvatarFallback className="bg-primary/10">{user.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage
+                    src={user.avatar || `/placeholder.svg?height=40&width=40&text=${user.username.charAt(0)}`}
+                  />
+                  <AvatarFallback className="bg-primary/10">{user.username.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="ml-3">
-                  <h3 className="font-medium">{user.name}</h3>
+                  <h3 className="font-medium">{user.username}</h3>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
               </div>
@@ -93,25 +123,30 @@ export default function UserSearch({ onSelectUser, onCreateGroup, onClose, curre
           </div>
         </TabsContent>
 
-        <TabsContent value="group" className="flex-1 flex flex-col m-0">
+        <TabsContent
+          value="group"
+          className={`flex-1 flex flex-col m-0 ${activeTab !== "group" ? "hidden" : ""}`}
+        >
           <div className="flex-1 overflow-y-auto divide-y divide-border/30">
             {filteredUsers.map((user) => (
               <div
-                key={user.id}
+                key={user._id}
                 className="flex items-center p-4 hover:bg-accent/30 cursor-pointer transition-all duration-200"
                 onClick={() => toggleUserSelection(user)}
               >
                 <Checkbox
-                  checked={selectedUsers.some((u) => u.id === user.id)}
+                  checked={selectedUsers.some((u) => u._id === user._id)}
                   onCheckedChange={() => toggleUserSelection(user)}
                   className="mr-3"
                 />
                 <Avatar className="h-10 w-10 border-2 border-background">
-                  <AvatarImage src={user.avatar || `/placeholder.svg?height=40&width=40&text=${user.name.charAt(0)}`} />
-                  <AvatarFallback className="bg-primary/10">{user.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage
+                    src={user.avatar || `/placeholder.svg?height=40&width=40&text=${user.username.charAt(0)}`}
+                  />
+                  <AvatarFallback className="bg-primary/10">{user.username.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="ml-3">
-                  <h3 className="font-medium">{user.name}</h3>
+                  <h3 className="font-medium">{user.username}</h3>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
               </div>
@@ -133,6 +168,5 @@ export default function UserSearch({ onSelectUser, onCreateGroup, onClose, curre
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
-

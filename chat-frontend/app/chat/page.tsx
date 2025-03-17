@@ -2,15 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
-import ChatList from "@/components/chat-list"
-import ChatWindow from "@/components/chat-window"
-import UserSearch from "@/components/user-search"
 import { chats, messages } from "@/lib/dummy-data"
 import type { User, Chat } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import { Moon, Sun, Users, MessageSquare, Search, Menu, X, LogOut } from "lucide-react"
 import { useMobile } from "@/hooks/use-mobile"
 import { useAuth } from "@/context/auth-context"
+import Sidebar from "@/components/chat/sidebar"
+import ChatArea from "@/components/chat/chat-area"
+import MobileMenuButton from "@/components/chat/mobile-menu-button"
 
 export default function ChatPage() {
   const { theme, setTheme } = useTheme()
@@ -25,11 +23,11 @@ export default function ChatPage() {
     setMounted(true)
   }, [])
 
-  // useEffect(() => {
-  //   setInterval(() => {
-  //     console.log(currentUser)
-  //   }, 1000);
-  // }, [])
+  useEffect(() => {
+    setInterval(() => {
+      console.log(currentUser)
+    }, 1000)
+  }, [])
 
   // Auto-close sidebar on mobile
   useEffect(() => {
@@ -94,105 +92,32 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen bg-gradient-to-br from-background to-background/95">
       {/* Mobile menu button */}
-      {isMobile && (
-        <button
-          className="absolute top-4 left-4 z-50 bg-primary/10 rounded-full p-2"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      )}
+      {isMobile && <MobileMenuButton sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />}
 
       {/* Sidebar */}
-      <div
-        className={`${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 fixed md:relative z-40 w-80 h-full bg-card/90 backdrop-blur-sm border-r border-border/50 flex flex-col shadow-lg`}
-      >
-        <div className="p-4 border-b border-border/50 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-primary">ChatApp</h1>
-          <div className="flex space-x-2">
-            {mounted && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="rounded-full bg-primary/10 hover:bg-primary/20"
-              >
-                {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={logout}
-              className="rounded-full bg-primary/10 hover:bg-primary/20"
-            >
-              <LogOut size={20} />
-            </Button>
-          </div>
-        </div>
+      <Sidebar
+        chats={chats}
+        sidebarOpen={sidebarOpen}
+        showSearch={showSearch}
+        setShowSearch={setShowSearch}
+        selectedChat={selectedChat}
+        setSelectedChat={setSelectedChat}
+        currentUser={currentUser}
+        theme={theme}
+        setTheme={setTheme}
+        mounted={mounted}
+        logout={logout}
+        startChat={startChat}
+        createGroupChat={createGroupChat}
+      />
 
-        <div className="flex-1 overflow-y-auto">
-          {showSearch ? (
-            <UserSearch
-              onSelectUser={startChat}
-              onCreateGroup={createGroupChat}
-              onClose={() => setShowSearch(false)}
-              currentUser={currentUser}
-            />
-          ) : (
-            <ChatList
-              chats={chats}
-              selectedChat={selectedChat}
-              onSelectChat={setSelectedChat}
-              currentUser={currentUser}
-            />
-          )}
-        </div>
-
-        <div className="p-4 border-t border-border/50 flex space-x-2">
-          <Button className="flex-1 rounded-full" onClick={() => setShowSearch(true)}>
-            <Search className="mr-2 h-4 w-4" />
-            Find People
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => {
-              setShowSearch(true)
-            }}
-            className="rounded-full"
-          >
-            <Users size={20} />
-          </Button>
-        </div>
-      </div>
-
-      {/* Chat window */}
-      <div className="flex-1 flex flex-col bg-card/80 backdrop-blur-sm">
-        {selectedChat ? (
-          <ChatWindow
-            chat={selectedChat}
-            messages={messages.filter((m) => m.chatId === selectedChat.id)}
-            currentUser={currentUser}
-          />
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
-            <div className="bg-primary/10 p-6 rounded-full mb-6">
-              <MessageSquare size={64} className="text-primary" />
-            </div>
-            <h2 className="text-2xl font-bold mb-2">Welcome to ChatApp</h2>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              Connect with friends, family, and colleagues. Start a conversation or join a group chat.
-            </p>
-            <Button onClick={() => setShowSearch(true)} className="rounded-full px-6">
-              <Search className="mr-2 h-4 w-4" />
-              Find People
-            </Button>
-          </div>
-        )}
-      </div>
+      {/* Chat area */}
+      <ChatArea
+        selectedChat={selectedChat}
+        currentUser={currentUser}
+        messages={messages}
+        setShowSearch={setShowSearch}
+      />
     </div>
   )
 }

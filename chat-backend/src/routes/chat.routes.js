@@ -3,9 +3,9 @@ import { createChat, deleteChat, deleteMessage, fetchMessages, fetchUserChats } 
 
 const chatRoutes = Router()
 
-chatRoutes.post("/", createChat);
-chatRoutes.get("/:userId", fetchUserChats);
-chatRoutes.delete("/:chatId", deleteChat);
+chatRoutes.post("/create", createChat);
+chatRoutes.get("/chats/:userId", fetchUserChats);
+chatRoutes.delete("/delete/:chatId", deleteChat);
 
 chatRoutes.get("/messages/:chatId", fetchMessages);
 chatRoutes.delete("/messages/:messageId", deleteMessage);

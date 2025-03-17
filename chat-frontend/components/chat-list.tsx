@@ -4,6 +4,7 @@ import type { Chat, User } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { Users } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { chats } from "@/lib/dummy-data"
 
 interface ChatListProps {
   chats: Chat[]
@@ -17,7 +18,7 @@ export default function ChatList({ chats, selectedChat, onSelectChat, currentUse
     <div className="divide-y divide-border/30">
       {chats.map((chat) => {
         // For 1:1 chats, get the other participant
-        const otherParticipant = !chat.isGroup ? chat.participants.find((p) => p.id !== currentUser.id) : null
+        const otherParticipant = !chat.isGroup ? chat.participants.find((p) => p._id !== currentUser._id) : null
 
         return (
           <div
@@ -38,17 +39,17 @@ export default function ChatList({ chats, selectedChat, onSelectChat, currentUse
                   <AvatarImage
                     src={
                       otherParticipant?.avatar ||
-                      `/placeholder.svg?height=48&width=48&text=${otherParticipant?.name.charAt(0)}`
+                      `/placeholder.svg?height=48&width=48&text=${otherParticipant?.username.charAt(0)}`
                     }
                   />
-                  <AvatarFallback className="bg-primary/10">{otherParticipant?.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="bg-primary/10">{otherParticipant?.username.charAt(0)}</AvatarFallback>
                 </Avatar>
               )}
               <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-card"></span>
             </div>
             <div className="ml-4 flex-1 overflow-hidden">
               <div className="flex justify-between items-center">
-                <h3 className="font-medium truncate">{chat.isGroup ? chat.name : otherParticipant?.name}</h3>
+                <h3 className="font-medium truncate">{chat.isGroup ? chat.name : otherParticipant?.username}</h3>
                 <span className="text-xs text-muted-foreground">
                   {new Date(chat.lastMessage.timestamp).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -57,7 +58,7 @@ export default function ChatList({ chats, selectedChat, onSelectChat, currentUse
                 </span>
               </div>
               <p className="text-sm text-muted-foreground truncate">
-                {chat.lastMessage.senderId === currentUser.id
+                {chat.lastMessage.senderId === currentUser._id
                   ? `You: ${chat.lastMessage.content}`
                   : chat.lastMessage.content}
               </p>

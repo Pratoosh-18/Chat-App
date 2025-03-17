@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/context/auth-context"
 import { useTheme } from "next-themes"
 import { Moon, Sun } from "lucide-react"
+import { BACKEND_URL } from "@/lib/constants"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -32,7 +33,7 @@ export default function LoginPage() {
     setIsLoading(true)
     
     try {
-      const response = await fetch("http://localhost:8000/api/v1/user/login", {
+      const response = await fetch(`${BACKEND_URL}/user/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

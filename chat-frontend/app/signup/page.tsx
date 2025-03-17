@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useTheme } from "next-themes"
 import { Moon, Sun, Upload } from "lucide-react"
+import { BACKEND_URL } from "@/lib/constants"
 
 export default function SignupPage() {
   const [username, setUsername] = useState("")
@@ -65,7 +66,7 @@ export default function SignupPage() {
     formData.append("avatar", profilePicture)
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/user/register", {
+      const response = await fetch(`${BACKEND_URL}/user/register`, {
         method: "POST",
         body: formData,
       })
@@ -92,14 +93,18 @@ export default function SignupPage() {
         )}
       </div>
       <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-primary mb-2">ChatApp</h1>
+          <p className="text-muted-foreground">Connect with friends and the world</p>
+        </div>
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-center">Create an Account</CardTitle>
             <CardDescription className="text-center">Enter your details to sign up</CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
-            <CardContent>
-              <div className="flex flex-col items-center">
+            <CardContent className="space-y-2">
+              <div className="flex flex-col items-center gap-3">
                 <Avatar className="h-24 w-24 cursor-pointer border" onClick={() => fileInputRef.current?.click()}>
                   <AvatarImage src={preview || ""} />
                   <AvatarFallback>{username.charAt(0).toUpperCase() || <Upload className="h-8 w-8" />}</AvatarFallback>
@@ -107,18 +112,26 @@ export default function SignupPage() {
                 <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>Upload</Button>
                 <Input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleProfilePictureChange} />
               </div>
-              <Label>Username</Label>
-              <Input value={username} onChange={(e) => setUsername(e.target.value)} required />
-              <Label>Email</Label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-              <Label>Password</Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-              <Label>Confirm Password</Label>
-              <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+              <div className="space-y-1">
+                <Label>Username</Label>
+                <Input value={username} onChange={(e) => setUsername(e.target.value)} required />
+              </div>
+              <div className="space-y-1">
+                <Label>Email</Label>
+                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              </div>
+              <div className="space-y-1">
+                <Label>Password</Label>
+                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              </div>
+              <div className="space-y-1">
+                <Label>Confirm Password</Label>
+                <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+              </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col gap-3">
               <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? "Signing up..." : "Sign up"}</Button>
-              <p className="text-center">Already have an account? <Link href="/login" className="text-primary">Login</Link></p>
+              <p className="text-center">Already have an account? <Link href="/login" className="text-primary mx-2">Login</Link></p>
             </CardFooter>
           </form>
         </Card>
